@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader, random_split
 from src.dataset import CellInstanceDataset
 from src.model import get_instance_segmentation_model
 from src.test import run_prediction
-from src.train import collate_fn, evaluate, train_one_epoch
+from src.train import collate_fn, evaluate, plot_losses, train_one_epoch
 from src.transforms import get_test_transforms, get_train_transforms
 from src.utils import set_seed
 
@@ -82,6 +82,7 @@ def main():
         model.load_state_dict(torch.load(args.weights, map_location=device))
         model.to(device)
 
+        print(f"Starting inference with device: {device}")
         run_prediction(model, test_loader, device, args.outfile)
         return
 
@@ -101,6 +102,9 @@ def main():
 
     model = get_instance_segmentation_model()
 
+    trainable_param = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Trainable parameters: {trainable_param/1e6:.2f}M")
+
     if args.weights and args.weights.exists():
         print(f"→ resume from {args.weights}")
         model.load_state_dict(torch.load(args.weights, map_location=device))
@@ -118,15 +122,20 @@ def main():
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     best_loss = float("inf")
+    train_losses, val_losses = [], []
 
     print(f"Starting training with device: {device}")
     for epoch in range(1, args.epochs + 1):
 
-        train_one_epoch(model, train_loader, optimizer, device, epoch)
+        epoch_train_loss = train_one_epoch(
+            model, train_loader, optimizer, device, epoch
+        )
+        train_losses.append(epoch_train_loss)
 
         try:
             val_loss = evaluate(model, val_loader, device)
             lr_scheduler.step(val_loss)
+            val_losses.append(val_loss)
 
             ckpt = args.output_dir / f"model_epoch_{epoch}.pth"
             torch.save(model.state_dict(), ckpt)
@@ -143,6 +152,8 @@ def main():
             ckpt = args.output_dir / f"model_epoch_{epoch}.pth"
             torch.save(model.state_dict(), ckpt)
             print(f"✓ saved checkpoint → {ckpt}")
+
+    plot_losses(train_losses, val_losses)
 
 
 if __name__ == "__main__":
