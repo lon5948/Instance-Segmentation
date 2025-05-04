@@ -21,3 +21,7 @@ def encode_mask(bin_mask: np.ndarray) -> Dict:
     rle = mask_utils.encode(np.asfortranarray(bin_mask.astype(np.uint8)))
     rle["counts"] = rle["counts"].decode("utf-8")
     return rle
+
+
+def decode_maskobj(mask_obj):
+    return mask_utils.decode(mask_obj)
