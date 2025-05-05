@@ -3,6 +3,7 @@ from torchvision.models import ResNet101_Weights
 from torchvision.models.detection import MaskRCNN
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.rpn import AnchorGenerator
 
 
 def get_instance_segmentation_model(num_classes: int = 5, pretrained_backbone=True):
@@ -22,9 +23,15 @@ def get_instance_segmentation_model(num_classes: int = 5, pretrained_backbone=Tr
         trainable_layers=3,  # layer3, layer4, FPN
     )
 
+    anchor_generator = AnchorGenerator(
+        sizes=((8,), (16,), (32,), (64,), (128,)),
+        aspect_ratios=((0.5, 1.0, 2.0),) * 5,
+    )
+
     model = MaskRCNN(
         backbone,
         num_classes=num_classes,
+        rpn_anchor_generator=anchor_generator,
         box_detections_per_img=300,
         rpn_post_nms_top_n_train=2000,
         rpn_post_nms_top_n_test=1000,
