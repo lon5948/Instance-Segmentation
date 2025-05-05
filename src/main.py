@@ -137,10 +137,6 @@ def main():
             lr_scheduler.step(val_loss)
             val_losses.append(val_loss)
 
-            ckpt = args.output_dir / f"model_epoch_{epoch}.pth"
-            torch.save(model.state_dict(), ckpt)
-            print(f"✓ saved checkpoint → {ckpt}")
-
             if val_loss < best_loss:
                 best_loss = val_loss
                 best_ckpt = args.output_dir / "model_best.pth"

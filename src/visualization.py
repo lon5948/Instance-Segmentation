@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.color import label2rgb
-from skimage.io import imread, imsave
+from skimage.io import imread
 
 from src.utils import decode_maskobj
 
@@ -39,12 +39,19 @@ def build_mask(preds):
 
 def main():
     parser = argparse.ArgumentParser(description="Convert RLE preds to mask")
-    parser.add_argument("--preds", required=True, type=Path,
-                        help="JSON file with COCO-style predictions")
-    parser.add_argument("--image", type=Path, default=None,
-                        help="Original image (optional, for visualisation)")
-    parser.add_argument("--id", required=True, type=int,
-                        help="image_id to visualise")
+    parser.add_argument(
+        "--preds",
+        required=True,
+        type=Path,
+        help="JSON file with COCO-style predictions",
+    )
+    parser.add_argument(
+        "--image",
+        type=Path,
+        default=None,
+        help="Original image (optional, for visualisation)",
+    )
+    parser.add_argument("--id", required=True, type=int, help="image_id to visualise")
     args = parser.parse_args()
 
     with args.preds.open() as f:
