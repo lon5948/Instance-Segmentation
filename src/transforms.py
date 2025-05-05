@@ -106,8 +106,6 @@ def get_train_transforms():
             T.RandomApply([T.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
             # More aggressive noise to improve robustness
             AddGaussianNoise(mean=0.0, std=0.03, p=0.6),
-            # Random erasing simulates occlusion/debris
-            T.RandomErasing(p=0.2, scale=(0.02, 0.08), ratio=(0.3, 3.3), value=0.5),
         ]
     )
 
